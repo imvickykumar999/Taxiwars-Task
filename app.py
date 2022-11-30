@@ -5,26 +5,25 @@ import json
 
 app = Flask(__name__)
 
-@app.route('/createapi', methods=['POST'])
+@app.route('/start', methods=['POST'])
 def create_api():
-	content_type = request.headers.get('Content-Type')
-	count = fire.call('taxicounter')
 
+	count = fire.call('taxicounter')
 	if count == None:
 		fire.send('taxicounter', 1000)
 
 	count = fire.call('taxicounter')
 	uid = count+1
+
 	fire.send('taxicounter', uid)
 	_path = f"taxiwars/{uid}"
 
-	if content_type == 'application/json':
-		content = request.json
-		
-		content['unique_ID'] = uid
-		fire.send(_path, content)
-		return content, 201
-		
+	content = {"mystring" : ""}
+	content['game_ID'] = uid
+
+	fire.send(_path, content)
+	return content, 201
+
 
 @app.route('/updateapibyid/<uid>', methods=['PUT'])
 def update_api_by_id(uid):
@@ -75,7 +74,7 @@ def get_all_apis():
 	return content, 200
 
 
-@app.route('/getapibyid/<uid>')
+@app.route('/getBoard/<uid>')
 def get_api_by_id(uid):
 	_path = f"taxiwars/{uid}"
 	content = fire.call(_path)
