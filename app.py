@@ -20,54 +20,40 @@ def create_api():
 
 	content = {"mystring" : ""}
 	content['game_ID'] = uid
+	content['ispalindrome'] = False
 
 	fire.send(_path, content)
 	return content, 201
 
 
-@app.route('/updateapibyid/<uid>', methods=['PUT'])
+@app.route('/updateBoard/<uid>', methods=['PUT'])
 def update_api_by_id(uid):
-	content_type = request.headers.get('Content-Type')
-	_path = f"taxiwars/{uid}"
-	jsondata = fire.call(_path)
 
-	if jsondata == None:
+	_path = f"taxiwars/{uid}"
+	content = fire.call(_path)
+
+	if content == None:
 		return jsonify({
 			'error' : {
 				'description' : f'Unique ID {uid} not Found in Database.'
 			}
 		})
 
-	elif content_type == 'application/json':
-		content = request.json
+	try:
+		content['mystring'] += request.args.get('onechar')
+		import random
+		content['mystring'] += f"{random.choice('1234567890')}"
 
-		try:
-			jsondata['fname'] = content['fname']
-		except:
-			pass
+		if (len(content['mystring']) >= 6) and (content['mystring'] == content['mystring'][::-1]):
+			content['ispalindrome'] = True
+	except:
+		pass
 
-		try:
-			jsondata['lname'] = content['lname']
-		except:
-			pass
-
-		try:
-			jsondata['age']   = content['age']
-		except:
-			pass
-
-		fire.send(_path, jsondata)
-		return jsondata, 201
-
-	else:
-		return jsonify({
-			'error' : {
-				'description' : f'content_type = {content_type} is not Supported.'
-			}
-		})
+	fire.send(_path, content)
+	return content, 201
 
 
-@app.route('/getallapis')
+@app.route('/listofgameapi')
 def get_all_apis():
 	content = fire.call('taxiwars')
 	content = json.dumps(content)
